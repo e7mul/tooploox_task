@@ -35,7 +35,7 @@ def margin_loss_mining(embeddings, labels, alpha, mask_type):
         mask2 = get_hard_mask(triplet_loss, alpha)
     triplet_loss = triplet_loss*mask2
     num_positive_samples = torch.sum(mask2)
-    loss = torch.sum(triplet_loss)/num_positive_samples
+    loss = torch.sum(triplet_loss)/(num_positive_samples + 1e-16)
     return loss, num_positive_samples/len(labels)**3
 
 

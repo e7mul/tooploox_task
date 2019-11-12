@@ -46,28 +46,29 @@ if __name__ == '__main__':
         for x, y in trainloader:
             optimizer.zero_grad()
             output, embeddings = model(x.to(device))
-            loss, valid_fraction = margin_loss(embeddings, y.to(device), 1.0)
+            # loss, valid_fraction = margin_loss(embeddings, y.to(device), 1.0)
             # loss, valid_fraction = margin_loss_mining(embeddings, y.to(device), 1.0, 'hard')
-            # loss, valid_fraction = margin_loss_mining(embeddings, y.to(device), 1.0, 'semihard')
+            loss, valid_fraction = margin_loss_mining(embeddings, y.to(device), 1.0, 'semihard')
             # loss, valid_fraction = exponent_loss(embeddings, y.to(device))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print('Epoch {} \t Loss: {}'.format(epoch, total_loss))
+        print('Epoch {} \t Loss: {} \t Valid frac: {}'.format(epoch, total_loss, valid_fraction))
         exp.metric('loss', total_loss)
 
     train_X, train_Y = get_embeddings(model, trainloader, device)
     test_X, test_Y = get_embeddings(model, testloader, device)
 
-    # reduced_umap = umap.UMAP().fit_transform(test_X.numpy())
-    # reduced_tsne = TSNE(n_components=2).fit_transform(test_X.numpy())
+    reduced_umap = umap.UMAP().fit_transform(test_X.numpy())
+    reduced_tsne = TSNE(n_components=2).fit_transform(test_X.numpy())
 
 
-    # import matplotlib.pyplot as plt
-    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
-    # ax1.scatter(reduced_umap[:, 0], reduced_umap[:, 1], c=test_Y)
-    # ax2.scatter(reduced_tsne[:, 0], reduced_tsne[:, 1], c=test_Y)
-    # plt.savefig('../results/classifier.pdf', format='pdf')
+    import matplotlib.pyplot as plt
+    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+    ax1.scatter(reduced_umap[:, 0], reduced_umap[:, 1], c=test_Y)
+    ax2.scatter(reduced_tsne[:, 0], reduced_tsne[:, 1], c=test_Y)
+    plt.show()
+    # plt.savefig('../results/semihard.pdf', format='pdf')
 
 
     pred_class = euclidean_knn(test_X, train_X, train_Y)
